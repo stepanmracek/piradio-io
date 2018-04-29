@@ -1,0 +1,8 @@
+{
+  "name": "piradio-io",
+  "app_id": "",
+  "type": "ionic-angular",
+  "integrations": {
+    "cordova": {}
+  }
+}
