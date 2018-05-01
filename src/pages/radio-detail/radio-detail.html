@@ -1,0 +1,25 @@
+<ion-header>
+  <ion-navbar color="primary">
+    <ion-buttons start>
+      <button ion-button icon-only (click)="dismiss()">
+        <ion-icon name="close"></ion-icon>
+      </button>
+    </ion-buttons>
+    <ion-title>{{station._id ? 'Edit radio station' : 'Add radio station'}}</ion-title>
+  </ion-navbar>
+</ion-header>
+
+<ion-content padding>
+  <ion-list>
+    <ion-item>
+      <ion-label floating>Name</ion-label>
+      <ion-input type="text" [(ngModel)]="station.name"></ion-input>
+    </ion-item>
+
+    <ion-item>
+      <ion-label floating>URL</ion-label>
+      <ion-input type="text" [(ngModel)]="station.url"></ion-input>
+    </ion-item>
+  </ion-list>
+  <button ion-button full color="secondary" [disabled]="!station.name || !station.url" (click)="save()">{{station._id ? 'Save' : 'Add'}}</button>
+</ion-content>

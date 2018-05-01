@@ -1,14 +1,26 @@
 <ion-header>
-  <ion-navbar>
+  <ion-navbar color="primary">
     <ion-title>
-      Ionic Blank
+      Radio stations
     </ion-title>
+    <ion-buttons end>
+      <button (click)="showMenu($event)" ion-button icon-only>
+        <ion-icon name="more"></ion-icon>
+      </button>
+    </ion-buttons>
   </ion-navbar>
 </ion-header>
 
 <ion-content padding>
-  The world is your oyster.
-  <p>
-    If you get lost, the <a href="http://ionicframework.com/docs/v2">docs</a> will be your guide.
-  </p>
+  <ion-fab right bottom>
+    <button color="secondary" ion-fab (click)="onAddClick()">
+      <ion-icon name="add"></ion-icon>
+    </button>
+  </ion-fab>
+  <ion-list>
+    <button ion-item (click)="onClick(station)" *ngFor="let station of stations">
+      {{station.name}}
+      <ion-icon *ngIf="status?.isPlaying && status?.selectedStation?.url == station.url" name="play" item-end></ion-icon>
+    </button>
+  </ion-list>
 </ion-content>
