@@ -176,7 +176,7 @@ export class HomePage implements OnInit, OnDestroy {
   }
 
   private promptUrl() {
-    const address = localStorage.getItem(this.storageKey) || 'localhost';
+    const address = localStorage.getItem(this.storageKey) || '192.168.0.10';
     const prompt = this.alertCtrl.create({
       title: 'Please enter RaspberryPi address',
       inputs: [{
