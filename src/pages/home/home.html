@@ -17,10 +17,15 @@
       <ion-icon name="add"></ion-icon>
     </button>
   </ion-fab>
-  <ion-list>
-    <button ion-item (click)="onClick(station)" *ngFor="let station of stations">
-      {{station.name}}
-      <ion-icon *ngIf="status?.isPlaying && status?.selectedStation?.url == station.url" name="play" item-end></ion-icon>
-    </button>
-  </ion-list>
+  <div *ngIf="error; else list" style="display: flex; width: 100%; height: 100%; align-items: center; justify-content: center">
+    <h1 class="connection-error">Connection error</h1>
+  </div>
+  <ng-template #list>
+    <ion-list>
+      <button ion-item (click)="onClick(station)" *ngFor="let station of stations">
+        {{station.name}}
+        <ion-icon *ngIf="status?.isPlaying && status?.selectedStation?.url == station.url" name="play" item-end></ion-icon>
+      </button>
+    </ion-list>
+  </ng-template>
 </ion-content>

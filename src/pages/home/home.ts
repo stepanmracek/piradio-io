@@ -18,6 +18,7 @@ export class HomePage implements OnInit, OnDestroy {
   stations: IStation[] = null;
   status: IStatus = null;
   subscriptions: Subscription[] = [];
+  error = false;
 
   constructor(
     public navCtrl: NavController,
@@ -41,6 +42,7 @@ export class HomePage implements OnInit, OnDestroy {
   }
 
   private showError(text: string) {
+    this.error = true;
     this.alertCtrl.create({
       title: 'Error',
       message: text,
@@ -49,6 +51,7 @@ export class HomePage implements OnInit, OnDestroy {
   }
 
   private subscribe() {
+    this.error = false;
     this.subscriptions.push(this.radio.getStations()
       .subscribe(stations => {
         this.stations = stations
