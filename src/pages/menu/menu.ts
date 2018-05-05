@@ -1,12 +1,12 @@
 import { Component } from '@angular/core';
-import { IonicPage, NavController, NavParams, ViewController } from 'ionic-angular';
+import { ViewController } from 'ionic-angular';
 
 @Component({
   selector: 'page-menu',
   templateUrl: 'menu.html',
 })
 export class MenuPage {
-  constructor(private navCtrl: NavController, private navParams: NavParams, private viewCtrl: ViewController) {
+  constructor(private viewCtrl: ViewController) {
 
   }
 
