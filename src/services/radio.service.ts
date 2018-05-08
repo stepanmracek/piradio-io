@@ -9,11 +9,6 @@ export interface IStation {
   url: string;
 }
 
-export interface IStatus {
-  isPlaying: boolean;
-  selectedStation: IStation;
-}
-
 @Injectable()
 export class RadioService {
   private url = 'http://localhost:3000';
@@ -36,8 +31,8 @@ export class RadioService {
     return this.http.put<IStation>(`${this.url}/stations/${id}`, station);
   }
 
-  getStatus(): Observable<IStatus> {
-    return this.http.get<IStatus>(`${this.url}/status`);
+  getStatus(): Observable<IStation> {
+    return this.http.get<IStation>(`${this.url}/status`);
   }
 
   createStation(station: IStation): Observable<IStation> {

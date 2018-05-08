@@ -1,13 +1,13 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { Observable } from 'rxjs/Observable';
 import { Subscription } from 'rxjs/Subscription';
 import { NavController, ModalController, ActionSheetController, AlertController, PopoverController } from 'ionic-angular';
 import 'rxjs/add/observable/timer';
 import 'rxjs/add/operator/switchMap';
 import 'rxjs/add/operator/filter';
 import { RadioDetailComponent } from '../radio-detail/radio-detail';
-import { RadioService, IStation, IStatus } from '../../services/radio.service';
+import { RadioService, IStation } from '../../services/radio.service';
 import { MenuPage } from '../menu/menu';
+import { WebsocketService } from '../../services/websocket.service';
 
 @Component({
   selector: 'page-home',
@@ -16,13 +16,14 @@ import { MenuPage } from '../menu/menu';
 export class HomePage implements OnInit, OnDestroy {
   private storageKey = 'piradio-address';
   stations: IStation[] = null;
-  status: IStatus = null;
+  playingStation: IStation = null;
   subscriptions: Subscription[] = [];
   error = false;
 
   constructor(
     public navCtrl: NavController,
     private radio: RadioService,
+    private websocket: WebsocketService,
     private modalCtrl: ModalController,
     private actionSheetCtrl: ActionSheetController,
     private alertCtrl: AlertController,
@@ -32,10 +33,11 @@ export class HomePage implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    const url = localStorage.getItem(this.storageKey);
-    if (url) {
-      this.radio.setUrl(`http://${url}:3000`);
-      this.subscribe();
+    const address = localStorage.getItem(this.storageKey);
+    if (address) {
+      const url = `http://${address}:3000`;
+      this.radio.setUrl(url);
+      this.subscribe(url);
     } else {
       this.promptUrl();
     }
@@ -50,7 +52,7 @@ export class HomePage implements OnInit, OnDestroy {
     }).present();
   }
 
-  private subscribe() {
+  private subscribe(url: string) {
     this.error = false;
     this.subscriptions.push(this.radio.getStations()
       .subscribe(stations => {
@@ -59,14 +61,18 @@ export class HomePage implements OnInit, OnDestroy {
         this.showError('Can\'t connect to RaspberryPi');
       }));
 
-    this.subscriptions.push(Observable
-      .timer(0, 1000)
-      .filter(() => this.stations && this.stations.length > 0)
-      .switchMap(() => this.radio.getStatus())
-      .subscribe(status => {
-        this.status = status;
+    this.subscriptions.push(this.radio.getStatus()
+      .subscribe(playingStation => {
+        this.playingStation = playingStation;
       }, error => {
-        console.log(error);
+        console.error(error);
+      }));
+
+    this.subscriptions.push(this.websocket.connect(url)
+      .subscribe(playingStation => {
+        this.playingStation = playingStation;
+      }, error => {
+        console.error(error);
       }));
   }
 
@@ -134,13 +140,9 @@ export class HomePage implements OnInit, OnDestroy {
     }]
     const actionSheet = this.actionSheetCtrl.create({
       title: 'Radio station actions',
-      buttons: this.isPlaying(station) ? playingButtons : nonPlayingButtons
+      buttons: this.playingStation && this.playingStation._id === station._id ? playingButtons : nonPlayingButtons
     });
     actionSheet.present();
-  }
-
-  private isPlaying(station: IStation) {
-    return this.status && this.status.isPlaying && this.status.selectedStation && this.status.selectedStation._id === station._id;
   }
 
   onAddClick() {
@@ -192,7 +194,7 @@ export class HomePage implements OnInit, OnDestroy {
           this.unsubscribe();
           const url = `http://${value.address}:3000`;
           this.radio.setUrl(url);
-          this.subscribe();
+          this.subscribe(url);
           localStorage.setItem(this.storageKey, value.address);
         }
       }]

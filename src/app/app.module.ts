@@ -10,6 +10,7 @@ import { HomePage } from '../pages/home/home';
 import { RadioDetailComponent } from '../pages/radio-detail/radio-detail';
 import { RadioService } from '../services/radio.service';
 import { MenuPage } from '../pages/menu/menu';
+import { WebsocketService } from '../services/websocket.service';
 
 @NgModule({
   declarations: [
@@ -34,7 +35,8 @@ import { MenuPage } from '../pages/menu/menu';
     StatusBar,
     SplashScreen,
     {provide: ErrorHandler, useClass: IonicErrorHandler},
-    RadioService
+    RadioService,
+    WebsocketService,
   ]
 })
 export class AppModule {}
