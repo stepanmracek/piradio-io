@@ -12,7 +12,7 @@
 </ion-header>
 
 <ion-content padding>
-  <ion-fab right bottom>
+  <ion-fab *ngIf="!error && !!stations" right bottom>
     <button color="secondary" ion-fab (click)="onAddClick()">
       <ion-icon name="add"></ion-icon>
     </button>
