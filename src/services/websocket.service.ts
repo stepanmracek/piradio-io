@@ -7,20 +7,28 @@ export class WebsocketService {
 
   constructor() { }
 
-  connect(url: string): Observable<any> {
-    const socket = io(url);
+  connect(url: string, apiKey: string): Observable<any> {
+    const socket = io(url, {
+      transportOptions: {
+        polling: {
+          extraHeaders: {
+            'Api-Key': apiKey
+          }
+        }
+      }
+    });
 
     // We define our observable which will observe any incoming messages
     // from our socket.io server.
     let observable = new Observable(observer => {
-        socket.on('connect', () => console.log('Connected to Websocket Server'));
-        socket.on('status', (data) => {
-          observer.next(data);
-        })
-        return () => {
-          console.log('Disconnectiong from Websocket Server')
-          socket.disconnect();
-        }
+      socket.on('connect', () => console.log('Connected to Websocket Server'));
+      socket.on('status', (data) => {
+        observer.next(data);
+      })
+      return () => {
+        console.log('Disconnectiong from Websocket Server')
+        socket.disconnect();
+      }
     });
 
     return observable;

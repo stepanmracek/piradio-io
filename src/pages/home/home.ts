@@ -14,7 +14,8 @@ import { WebsocketService } from '../../services/websocket.service';
   templateUrl: 'home.html'
 })
 export class HomePage implements OnInit, OnDestroy {
-  private storageKey = 'piradio-address';
+  private addressStorageKey = 'piradio-address';
+  private apiKeyStorageKey = 'piradio-apikey'
   stations: IStation[] = null;
   playingStation: IStation = null;
   subscriptions: Subscription[] = [];
@@ -33,11 +34,12 @@ export class HomePage implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    const address = localStorage.getItem(this.storageKey);
-    if (address) {
+    const address = localStorage.getItem(this.addressStorageKey);
+    const apiKey = localStorage.getItem(this.apiKeyStorageKey);
+    if (address && apiKey) {
       const url = `http://${address}:3000`;
-      this.radio.setUrl(url);
-      this.subscribe(url);
+      this.radio.setUrl(url, apiKey);
+      this.subscribe(url, apiKey);
     } else {
       this.promptUrl();
     }
@@ -52,7 +54,7 @@ export class HomePage implements OnInit, OnDestroy {
     }).present();
   }
 
-  private subscribe(url: string) {
+  private subscribe(url: string, apiKey: string) {
     this.error = false;
     this.subscriptions.push(this.radio.getStations()
       .subscribe(stations => {
@@ -68,7 +70,7 @@ export class HomePage implements OnInit, OnDestroy {
         console.error(error);
       }));
 
-    this.subscriptions.push(this.websocket.connect(url)
+    this.subscriptions.push(this.websocket.connect(url, apiKey)
       .subscribe(playingStation => {
         this.playingStation = playingStation;
       }, error => {
@@ -159,6 +161,18 @@ export class HomePage implements OnInit, OnDestroy {
     });
   }
 
+  volumeDown() {
+    this.radio.getVolume()
+      .switchMap(v => this.radio.setVolume(Math.max(0, v - 10)))
+      .subscribe({ error: e => console.error(e) });
+  }
+
+  volumeUp() {
+    this.radio.getVolume()
+      .switchMap(v => this.radio.setVolume(Math.min(100, v + 10)))
+      .subscribe({ error: e => console.error(e) });
+  }
+
   ngOnDestroy() {
     this.unsubscribe();
   }
@@ -178,13 +192,21 @@ export class HomePage implements OnInit, OnDestroy {
   }
 
   private promptUrl() {
-    const address = localStorage.getItem(this.storageKey) || '192.168.0.10';
+    const address = localStorage.getItem(this.addressStorageKey) || '192.168.0.10';
+    let apiKey = localStorage.getItem(this.apiKeyStorageKey) || '';
+    apiKey = apiKey ? atob(apiKey) : apiKey;
     const prompt = this.alertCtrl.create({
       title: 'Please enter RaspberryPi address',
       inputs: [{
         name: 'address',
-        placeholder: 'address',
+        label: 'Address',
+        placeholder: 'Address',
         value: address
+      }, {
+        name: 'apiKey',
+        placeholder: 'API key',
+        label: 'API key',
+        value: apiKey
       }],
       buttons: [{
         text: 'Cancel'
@@ -193,9 +215,11 @@ export class HomePage implements OnInit, OnDestroy {
         handler: value => {
           this.unsubscribe();
           const url = `http://${value.address}:3000`;
-          this.radio.setUrl(url);
-          this.subscribe(url);
-          localStorage.setItem(this.storageKey, value.address);
+          const apiKey = btoa(value.apiKey);
+          this.radio.setUrl(url, apiKey);
+          this.subscribe(url, apiKey);
+          localStorage.setItem(this.addressStorageKey, value.address);
+          localStorage.setItem(this.apiKeyStorageKey, apiKey);
         }
       }]
     });
