@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { ViewController, NavParams } from 'ionic-angular';
-import { IStation } from '../../services/radio.service';
+import { IStation } from '../../services/interfaces';
 
 @Component({
   selector: 'radio-detail',

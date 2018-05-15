@@ -5,9 +5,10 @@ import 'rxjs/add/observable/timer';
 import 'rxjs/add/operator/switchMap';
 import 'rxjs/add/operator/filter';
 import { RadioDetailComponent } from '../radio-detail/radio-detail';
-import { RadioService, IStation } from '../../services/radio.service';
+import { RadioService } from '../../services/radio.service';
 import { MenuPage } from '../menu/menu';
 import { WebsocketService } from '../../services/websocket.service';
+import { IStation } from '../../services/interfaces';
 
 @Component({
   selector: 'page-home',
@@ -71,11 +72,12 @@ export class HomePage implements OnInit, OnDestroy {
       }));
 
     this.subscriptions.push(this.websocket.connect(url, apiKey)
-      .subscribe(playingStation => {
-        this.playingStation = playingStation;
-      }, error => {
+      .subscribe(() => { }, error => {
         console.error(error);
       }));
+
+    this.subscriptions.push(this.websocket.status.subscribe(s => this.playingStation = s));
+    this.subscriptions.push(this.websocket.stations.subscribe(s => this.stations = s));
   }
 
   private edit(station: IStation) {
@@ -84,10 +86,7 @@ export class HomePage implements OnInit, OnDestroy {
     modal.present();
     modal.onDidDismiss(save => {
       if (save) {
-        this.radio.updateStation(station._id, copy).subscribe(() => {
-          station.name = copy.name;
-          station.url = copy.url;
-        }, error => {
+        this.radio.updateStation(station._id, copy).subscribe(() => { }, error => {
           this.showError('Error during saving station');
         });
       }
@@ -108,10 +107,7 @@ export class HomePage implements OnInit, OnDestroy {
         text: 'Yes',
         role: 'destructive',
         handler: () => {
-          this.radio.deleteStation(station._id).subscribe(() => {
-            const index = this.stations.indexOf(station);
-            if (index >= 0) this.stations.splice(index, 1);
-          }, error => {
+          this.radio.deleteStation(station._id).subscribe(() => { }, error => {
             this.showError('Error during deleting of the station');
           });
         }
@@ -153,9 +149,7 @@ export class HomePage implements OnInit, OnDestroy {
     modal.present();
     modal.onDidDismiss(save => {
       if (save)
-        this.radio.createStation(newStation).subscribe(station => {
-          this.stations.push(station);
-        }, error => {
+        this.radio.createStation(newStation).subscribe(station => { }, error => {
           this.showError('Error during creating of the new station');
         })
     });

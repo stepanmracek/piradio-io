@@ -1,13 +1,18 @@
 import { Injectable } from '@angular/core';
 import * as io from 'socket.io-client';
 import { Observable } from 'rxjs/Observable';
+import { Subject } from 'rxjs/Subject';
+import { IStation } from './interfaces';
 
 @Injectable()
 export class WebsocketService {
 
   constructor() { }
 
-  connect(url: string, apiKey: string): Observable<any> {
+  status: Subject<IStation> = new Subject<IStation>();
+  stations: Subject<IStation[]> = new Subject<IStation[]>();
+
+  connect(url: string, apiKey: string): Observable<void> {
     const socket = io(url, {
       transportOptions: {
         polling: {
@@ -20,11 +25,14 @@ export class WebsocketService {
 
     // We define our observable which will observe any incoming messages
     // from our socket.io server.
-    let observable = new Observable(observer => {
+    let observable = new Observable<void>(observer => {
       socket.on('connect', () => console.log('Connected to Websocket Server'));
       socket.on('status', (data) => {
-        observer.next(data);
-      })
+        this.status.next(data);
+      });
+      socket.on('stations', (data) => {
+        this.stations.next(data);
+      });
       return () => {
         console.log('Disconnectiong from Websocket Server')
         socket.disconnect();

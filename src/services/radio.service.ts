@@ -2,12 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs/Observable';
 import 'rxjs/add/operator/map'
-
-export interface IStation {
-  _id?: string;
-  name: string;
-  url: string;
-}
+import { IStation } from './interfaces';
 
 @Injectable()
 export class RadioService {
