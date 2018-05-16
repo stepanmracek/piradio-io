@@ -36,10 +36,10 @@
         <ion-icon range-right name="volume-up"></ion-icon>
       </ion-range>
     </ion-item>
-    <ng-container *ngIf="!error && !!stations && !playingStation">
+    <ng-container *ngIf="!error && !!stations && stations.length > 0 && !playingStation">
         <ion-title>Select station and enjoy music</ion-title>
     </ng-container>
-    <ng-container *ngIf="!error && !stations">
+    <ng-container *ngIf="!error && !!stations && stations.length === 0">
       <ion-title>Add station to start listening</ion-title>
     </ng-container>
     <ng-container *ngIf="error">
