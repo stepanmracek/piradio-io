@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Subscription } from 'rxjs/Subscription';
-import { NavController, ModalController, ActionSheetController, AlertController, PopoverController } from 'ionic-angular';
+import { NavController, ModalController, ActionSheetController, AlertController, PopoverController, Range } from 'ionic-angular';
 import 'rxjs/add/observable/timer';
 import 'rxjs/add/operator/switchMap';
 import 'rxjs/add/operator/filter';
@@ -19,6 +19,7 @@ export class HomePage implements OnInit, OnDestroy {
   private apiKeyStorageKey = 'piradio-apikey'
   stations: IStation[] = null;
   playingStation: IStation = null;
+  volume = 0;
   subscriptions: Subscription[] = [];
   error = false;
 
@@ -58,26 +59,25 @@ export class HomePage implements OnInit, OnDestroy {
   private subscribe(url: string, apiKey: string) {
     this.error = false;
     this.subscriptions.push(this.radio.getStations()
-      .subscribe(stations => {
-        this.stations = stations
-      }, error => {
+      .subscribe(stations => this.stations = stations, error => {
         this.showError('Can\'t connect to RaspberryPi');
       }));
 
     this.subscriptions.push(this.radio.getStatus()
-      .subscribe(playingStation => {
-        this.playingStation = playingStation;
-      }, error => {
-        console.error(error);
-      }));
+      .subscribe(playingStation => this.playingStation = playingStation, error => console.error(error))
+    );
+
+    this.subscriptions.push(this.radio.getVolume()
+      .subscribe(volume => this.volume = volume, error => console.error(error))
+    );
 
     this.subscriptions.push(this.websocket.connect(url, apiKey)
-      .subscribe(() => { }, error => {
-        console.error(error);
-      }));
+      .subscribe(() => { }, error => console.error(error))
+    );
 
     this.subscriptions.push(this.websocket.status.subscribe(s => this.playingStation = s));
     this.subscriptions.push(this.websocket.stations.subscribe(s => this.stations = s));
+    this.subscriptions.push(this.websocket.volume.subscribe(s => this.volume = s));
   }
 
   private edit(station: IStation) {
@@ -153,6 +153,10 @@ export class HomePage implements OnInit, OnDestroy {
           this.showError('Error during creating of the new station');
         })
     });
+  }
+
+  onVolumeChanged(e: Range) {
+    this.radio.setVolume(e.value).subscribe({ error: e => console.error(e) });
   }
 
   volumeDown() {

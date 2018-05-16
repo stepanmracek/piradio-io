@@ -13,12 +13,7 @@
 
 <ion-content padding>
   <ion-fab *ngIf="!error && !!stations" right bottom>
-    <button ion-fab mini><ion-icon name="musical-note"></ion-icon></button>
-    <ion-fab-list side="left">
-      <button color="secondary" ion-fab (click)="onAddClick()"><ion-icon name="add"></ion-icon></button>
-      <button color="secondary" ion-fab (click)="volumeUp()"><ion-icon name="volume-up"></ion-icon></button>
-      <button color="secondary" ion-fab (click)="volumeDown()"><ion-icon name="volume-down"></ion-icon></button>
-    </ion-fab-list>
+    <button color="secondary" ion-fab (click)="onAddClick()"><ion-icon name="add"></ion-icon></button>
   </ion-fab>
   <div *ngIf="error; else list" style="display: flex; width: 100%; height: 100%; align-items: center; justify-content: center">
     <h1 class="connection-error">Connection error</h1>
@@ -32,3 +27,23 @@
     </ion-list>
   </ng-template>
 </ion-content>
+
+<ion-footer>
+  <ion-toolbar>
+    <ion-item *ngIf="!error && !!stations && playingStation">
+      <ion-range [(ngModel)]="volume" [min]="0" [max]="100" [step]="10" [debounce]="250" (ionChange)="onVolumeChanged($event)">
+        <ion-icon range-left name="volume-mute"></ion-icon>
+        <ion-icon range-right name="volume-up"></ion-icon>
+      </ion-range>
+    </ion-item>
+    <ng-container *ngIf="!error && !!stations && !playingStation">
+        <ion-title>Select station and enjoy music</ion-title>
+    </ng-container>
+    <ng-container *ngIf="!error && !stations">
+      <ion-title>Add station to start listening</ion-title>
+    </ng-container>
+    <ng-container *ngIf="error">
+      <ion-title>Check your PiRadio address</ion-title>
+    </ng-container>
+  </ion-toolbar>
+</ion-footer>

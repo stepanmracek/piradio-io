@@ -11,6 +11,7 @@ export class WebsocketService {
 
   status: Subject<IStation> = new Subject<IStation>();
   stations: Subject<IStation[]> = new Subject<IStation[]>();
+  volume: Subject<number> = new Subject<number>();
 
   connect(url: string, apiKey: string): Observable<void> {
     const socket = io(url, {
@@ -27,14 +28,11 @@ export class WebsocketService {
     // from our socket.io server.
     let observable = new Observable<void>(observer => {
       socket.on('connect', () => console.log('Connected to Websocket Server'));
-      socket.on('status', (data) => {
-        this.status.next(data);
-      });
-      socket.on('stations', (data) => {
-        this.stations.next(data);
-      });
+      socket.on('status', data => this.status.next(data));
+      socket.on('stations', data => this.stations.next(data));
+      socket.on('volume', data => this.volume.next(+data));
       return () => {
-        console.log('Disconnectiong from Websocket Server')
+        console.log('Disconnecting from Websocket Server')
         socket.disconnect();
       }
     });
