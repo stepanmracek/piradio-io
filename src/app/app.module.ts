@@ -1,5 +1,4 @@
 import { BrowserModule } from '@angular/platform-browser';
-import { HttpClientModule } from '@angular/common/http'
 import { ErrorHandler, NgModule } from '@angular/core';
 import { IonicApp, IonicErrorHandler, IonicModule } from 'ionic-angular';
 import { SplashScreen } from '@ionic-native/splash-screen';
@@ -8,9 +7,8 @@ import { StatusBar } from '@ionic-native/status-bar';
 import { MyApp } from './app.component';
 import { HomePage } from '../pages/home/home';
 import { RadioDetailComponent } from '../pages/radio-detail/radio-detail';
-import { RadioService } from '../services/radio.service';
 import { MenuPage } from '../pages/menu/menu';
-import { WebsocketService } from '../services/websocket.service';
+import { PiradioApiModule } from '../piradio-api/piradio-api.module';
 
 @NgModule({
   declarations: [
@@ -21,8 +19,8 @@ import { WebsocketService } from '../services/websocket.service';
   ],
   imports: [
     BrowserModule,
-    HttpClientModule,
-    IonicModule.forRoot(MyApp)
+    IonicModule.forRoot(MyApp),
+    PiradioApiModule
   ],
   bootstrap: [IonicApp],
   entryComponents: [
@@ -35,8 +33,6 @@ import { WebsocketService } from '../services/websocket.service';
     StatusBar,
     SplashScreen,
     {provide: ErrorHandler, useClass: IonicErrorHandler},
-    RadioService,
-    WebsocketService,
   ]
 })
 export class AppModule {}

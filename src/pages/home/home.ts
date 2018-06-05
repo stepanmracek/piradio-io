@@ -5,10 +5,10 @@ import 'rxjs/add/observable/timer';
 import 'rxjs/add/operator/switchMap';
 import 'rxjs/add/operator/filter';
 import { RadioDetailComponent } from '../radio-detail/radio-detail';
-import { RadioService } from '../../services/radio.service';
 import { MenuPage } from '../menu/menu';
-import { WebsocketService } from '../../services/websocket.service';
-import { IStation } from '../../services/interfaces';
+import { IStation } from '../../piradio-api/interfaces';
+import { PiradioRestService } from '../../piradio-api/piradio-rest.service';
+import { PiradioWebsocketService } from '../../piradio-api/piradio-websocket.service';
 
 @Component({
   selector: 'page-home',
@@ -25,8 +25,8 @@ export class HomePage implements OnInit, OnDestroy {
 
   constructor(
     public navCtrl: NavController,
-    private radio: RadioService,
-    private websocket: WebsocketService,
+    private rest: PiradioRestService,
+    private websocket: PiradioWebsocketService,
     private modalCtrl: ModalController,
     private actionSheetCtrl: ActionSheetController,
     private alertCtrl: AlertController,
@@ -40,7 +40,7 @@ export class HomePage implements OnInit, OnDestroy {
     const apiKey = localStorage.getItem(this.apiKeyStorageKey);
     if (address && apiKey) {
       const url = `http://${address}:3000`;
-      this.radio.setUrl(url, apiKey);
+      this.rest.setUrl(url, apiKey);
       this.subscribe(url, apiKey);
     } else {
       this.promptUrl();
@@ -58,16 +58,16 @@ export class HomePage implements OnInit, OnDestroy {
 
   private subscribe(url: string, apiKey: string) {
     this.error = false;
-    this.subscriptions.push(this.radio.getStations()
+    this.subscriptions.push(this.rest.getStations()
       .subscribe(stations => this.stations = stations, error => {
         this.showError('Can\'t connect to RaspberryPi');
       }));
 
-    this.subscriptions.push(this.radio.getStatus()
+    this.subscriptions.push(this.rest.getStatus()
       .subscribe(playingStation => this.playingStation = playingStation, error => console.error(error))
     );
 
-    this.subscriptions.push(this.radio.getVolume()
+    this.subscriptions.push(this.rest.getVolume()
       .subscribe(volume => this.volume = volume, error => console.error(error))
     );
 
@@ -86,7 +86,7 @@ export class HomePage implements OnInit, OnDestroy {
     modal.present();
     modal.onDidDismiss(save => {
       if (save) {
-        this.radio.updateStation(station._id, copy).subscribe(() => { }, error => {
+        this.rest.updateStation(station._id, copy).subscribe(() => { }, error => {
           this.showError('Error during saving station');
         });
       }
@@ -94,7 +94,7 @@ export class HomePage implements OnInit, OnDestroy {
   }
 
   private play(station: IStation) {
-    if (station._id) this.radio.play(station._id).subscribe();
+    if (station._id) this.rest.play(station._id).subscribe();
   }
 
   private delete(station: IStation) {
@@ -107,7 +107,7 @@ export class HomePage implements OnInit, OnDestroy {
         text: 'Yes',
         role: 'destructive',
         handler: () => {
-          this.radio.deleteStation(station._id).subscribe(() => { }, error => {
+          this.rest.deleteStation(station._id).subscribe(() => { }, error => {
             this.showError('Error during deleting of the station');
           });
         }
@@ -134,7 +134,7 @@ export class HomePage implements OnInit, OnDestroy {
     const playingButtons = [{
       text: 'Stop',
       icon: 'pause',
-      handler: () => { this.radio.stop().subscribe(); }
+      handler: () => { this.rest.stop().subscribe(); }
     }]
     const actionSheet = this.actionSheetCtrl.create({
       title: 'Radio station actions',
@@ -149,25 +149,25 @@ export class HomePage implements OnInit, OnDestroy {
     modal.present();
     modal.onDidDismiss(save => {
       if (save)
-        this.radio.createStation(newStation).subscribe(station => { }, error => {
+        this.rest.createStation(newStation).subscribe(station => { }, error => {
           this.showError('Error during creating of the new station');
         })
     });
   }
 
   onVolumeChanged(e: Range) {
-    this.radio.setVolume(e.value).subscribe({ error: e => console.error(e) });
+    this.rest.setVolume(e.value).subscribe({ error: e => console.error(e) });
   }
 
   volumeDown() {
-    this.radio.getVolume()
-      .switchMap(v => this.radio.setVolume(Math.max(0, v - 10)))
+    this.rest.getVolume()
+      .switchMap(v => this.rest.setVolume(Math.max(0, v - 10)))
       .subscribe({ error: e => console.error(e) });
   }
 
   volumeUp() {
-    this.radio.getVolume()
-      .switchMap(v => this.radio.setVolume(Math.min(100, v + 10)))
+    this.rest.getVolume()
+      .switchMap(v => this.rest.setVolume(Math.min(100, v + 10)))
       .subscribe({ error: e => console.error(e) });
   }
 
@@ -214,7 +214,7 @@ export class HomePage implements OnInit, OnDestroy {
           this.unsubscribe();
           const url = `http://${value.address}:3000`;
           const apiKey = btoa(value.apiKey);
-          this.radio.setUrl(url, apiKey);
+          this.rest.setUrl(url, apiKey);
           this.subscribe(url, apiKey);
           localStorage.setItem(this.addressStorageKey, value.address);
           localStorage.setItem(this.apiKeyStorageKey, apiKey);

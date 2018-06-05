@@ -5,7 +5,7 @@ import { Subject } from 'rxjs/Subject';
 import { IStation } from './interfaces';
 
 @Injectable()
-export class WebsocketService {
+export class PiradioWebsocketService {
 
   constructor() { }
 

@@ -5,7 +5,7 @@ import 'rxjs/add/operator/map'
 import { IStation } from './interfaces';
 
 @Injectable()
-export class RadioService {
+export class PiradioRestService {
   private url = 'http://localhost:3000';
   apiKey = '';
 
